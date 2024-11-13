@@ -1,4 +1,3 @@
-
 {
   "version": 2,
   "builds": [
@@ -13,8 +12,16 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "src/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/server.js",
+      "headers": {
+        "Cache-Control": "no-store",
+        "Set-Cookie": "Path=/; HttpOnly; Secure; SameSite=Lax"
+      }
     }
   ]
 }

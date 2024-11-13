@@ -8,18 +8,30 @@ import indexRoutes from './routes/routes.js';
 import path from 'path';
 const app = express();
 
-// Configuración de express-session
+// Mover la configuración de session antes de cualquier otra configuración
 app.use(session({
   secret: 'tusecretoestáasalvo', // Cambia esto por una cadena secreta larga y aleatoria
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // Cambiar a true
+  saveUninitialized: true, // Cambiar a true
   cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Usa true en producción con HTTPS
+    secure: false, // Cambiar a false para desarrollo
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 horas
   }
 }));
 
+// Agregar este middleware después de session
+app.use((req, res, next) => {
+  if (req.session && req.session.userId) {
+    res.locals.isAuthenticated = true;
+    res.locals.userId = req.session.userId;
+    res.locals.userRole = req.session.userRole;
+    res.locals.firstName = req.session.firstName;
+  } else {
+    res.locals.isAuthenticated = false;
+  }
+  next();
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

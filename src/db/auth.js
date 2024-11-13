@@ -26,7 +26,6 @@ async function registerUser(name, lastname, email, password, role) {
 // Función para iniciar sesión
 async function loginUser(email, password, req) {
   try {
-    // Consultar si el usuario existe en la base de datos
     const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
       throw new Error('Usuario no encontrado');
@@ -38,32 +37,31 @@ async function loginUser(email, password, req) {
       throw new Error('Contraseña incorrecta');
     }
 
-    if (!req || !req.session) {
-      throw new Error('Sesión no disponible');
-    }
-
-    // Guardar el userId, userRole, firstName y profileImage en la sesión
+    // Establecer datos de sesión
     req.session.userId = user.user_id;
     req.session.userRole = user.role;
-    req.session.firstName = user.first_name; // Almacena el nombre del usuario en la sesión
-    req.session.profileImage = user.profile_image; // Almacena la foto de perfil en la sesión
+    req.session.firstName = user.first_name;
+    req.session.profileImage = user.profile_image;
+    req.session.authenticated = true;
 
-    console.log("Sesión iniciada: userId =", req.session.userId, ", userRole =", req.session.userRole);
-    
-    await new Promise((resolve, reject) => {
-      req.session.save(err => {
-        if (err) return reject(new Error('Error al guardar la sesión'));
-        resolve();
+    // Forzar guardado de sesión
+    return new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            userId: user.user_id,
+            role: user.role,
+            firstName: user.first_name
+          });
+        }
       });
     });
-
-    return { userId: user.user_id, role: user.role };
   } catch (err) {
-    console.error('Error detallado en el inicio de sesión:', err.message);
-    throw new Error('Error al iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.');
+    throw err;
   }
 }
-
 
 // Función para cerrar sesión
 function logoutUser(req) {

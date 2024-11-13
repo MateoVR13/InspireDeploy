@@ -23,7 +23,7 @@ app.use(session({
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'src/public/uploads/');
+    cb(null, 'public/uploads/');
   },
   filename: (req, file, cb) => {
     cb(null, `${req.session.userId}-${Date.now()}${path.extname(file.originalname)}`);

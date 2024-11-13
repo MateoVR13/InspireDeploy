@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node src/server.js",
-    "start": "node src/server.js",
-    "vercel-build": "npm run build",
-    "build": "cp -r src/public ./"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",

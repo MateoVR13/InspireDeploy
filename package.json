@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node src/server.js",
     "start": "node src/server.js",
-    "build": "mkdir -p public && cp -r src/public/* public/"
+    "build": "mkdir -p dist && cp -r src/public/* dist/"
   },
   "keywords": [],
   "author": "",

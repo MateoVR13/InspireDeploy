@@ -10,11 +10,11 @@ const app = express();
 
 // Mover la configuración de session antes de cualquier otra configuración
 app.use(session({
-  secret: 'tusecretoestáasalvo', // Cambia esto por una cadena secreta larga y aleatoria
-  resave: true, // Cambiar a true
-  saveUninitialized: true, // Cambiar a true
+  secret: process.env.SESSION_SECRET || 'tusecretoestáasalvo', // Cambia esto por una cadena secreta larga y aleatoria
+  resave: false, // Cambiar a true
+  saveUninitialized: false, // Cambiar a true
   cookie: { 
-    secure: false, // Cambiar a false para desarrollo
+    secure: process.env.NODE_ENV === 'production', // Cambiar a false para desarrollo
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 horas
   }
@@ -62,6 +62,19 @@ const upload = multer({
   }
 }).single('profilePhoto');
 
+app.use((req, res, next) => {
+  upload(req, res, function(err) {
+    if (err instanceof multer.MulterError) {
+      req.flash('errorMessage', 'Error al subir el archivo: ' + err.message);
+      return res.redirect('back');
+    } else if (err) {
+      req.flash('errorMessage', 'Solo se permiten imágenes');
+      return res.redirect('back');
+    }
+    next();
+  });
+});
+
 // Inicializar mensajes flash
 app.use(flash());
 app.use(express.json());
@@ -103,7 +116,11 @@ app.use((req, res, next) => {
 // Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Algo salió mal');
+  const statusCode = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' 
+    ? 'Un error ha ocurrido' 
+    : err.message;
+  res.status(statusCode).render('error', { error: message });
 });
 
 // Iniciar el servidor
